@@ -4,7 +4,7 @@ services:
     build: .
     image: mysingboxconverter
     ports:
-      - "localhost:45288:5000"
+      - "127.0.0.1:45288:5000"
     networks:
       - subconverter
 
