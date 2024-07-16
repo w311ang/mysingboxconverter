@@ -6,7 +6,9 @@ services:
     ports:
       - "5000:5000"
     networks:
-      - subconverter-network
+      - subconverter
 
 networks:
-  subconverter-network:
+  subconverter:
+    name: subconverter
+    external: true
