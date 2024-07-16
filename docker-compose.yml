@@ -3,6 +3,7 @@ services:
   mysingboxconverter:
     build: .
     image: mysingboxconverter
+    restart: always
     ports:
       - "127.0.0.1:45288:5000"
     networks:
