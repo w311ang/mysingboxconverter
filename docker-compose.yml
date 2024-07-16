@@ -1,0 +1,12 @@
+version: '3'
+services:
+  mysingboxconverter:
+    build: .
+    image: mysingboxconverter
+    ports:
+      - "5000:5000"
+    networks:
+      - subconverter-network
+
+networks:
+  subconverter-network:
