@@ -2,6 +2,7 @@ import httpx
 import json
 import yaml
 from cachetools import cached, TTLCache
+import re
 
 class converter:
 	client=httpx.Client()
@@ -20,9 +21,14 @@ class converter:
 		outbounds=[i for i in r['outbounds'] if not i['type'] in ['direct','block','dns','selector','urltest']]
 		tags=[i['tag'] for i in outbounds]
 
-		for index, i in enumerate(template['outbounds']):
-			if i['type'] in ['selector', 'urltest']:
+		for index, outbound in enumerate(template['outbounds']):
+			if 'outbounds-regex' in outbound:
+				regex=outbound['outbounds-regex']
+				template['outbounds'][index]['outbounds']=[tag for tag in tags if re.match(regex, tag)]
+				del template['outbounds'][index]['outbounds-regex']
+			elif outbound['type'] in ['selector', 'urltest']:
 				template['outbounds'][index]['outbounds']+=tags
+
 		template['outbounds']+=outbounds
 
 		return json.dumps(template)
