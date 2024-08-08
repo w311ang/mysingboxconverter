@@ -12,7 +12,11 @@ atexit.register(lambda: converter.close())
 def root():
 	sub = request.args.get('sub')
 	configurl = request.args.get('config', 'https://w311ang.github.io/my_singbox_template/index.yml')
+	if request.args.get('debug', 'false') == 'true':
+		debug = True
+	else:
+		debug = False
 
 	with httpx.Client() as client:
 		config=client.get(configurl).text
-	return converter.convert(sub, config)
+	return converter.convert(sub, config, debug=debug)
