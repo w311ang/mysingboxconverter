@@ -14,8 +14,11 @@ class converter:
 		r=r.json()
 		return r
 
-	def convert(self, suburl, config):
+	def convert(self, suburl, config, debug=False):
 		template=yaml.safe_load(config)
+
+		if debug:
+			template['log']['level']='debug'
 
 		r=self.__getsub(suburl)
 		outbounds=[i for i in r['outbounds'] if not i['type'] in ['direct','block','dns','selector','urltest']]
