@@ -54,7 +54,7 @@ class converter:
 
 		dns_rules_modded=[]
 		for rule in template['dns']['rules']:
-			if 'outbound' in rule:
+			if ('outbound' in rule) or ('inbound' in rule):
 				dns_rules_modded.append(rule)
 				continue
 			server=[server for server in template['dns']['servers'] if server['tag']==rule['server']][0]
