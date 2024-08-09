@@ -34,6 +34,39 @@ class converter:
 
 		template['outbounds']+=outbounds
 
+		dns_servers_modded=[]
+		for server in template['dns']['servers']:
+			server_prefer-ipv4=dict(server)
+			server_prefer-ipv4['tag']+='-prefer_ipv4'
+			del server_prefer-ipv4['strategy']
+			dns_servers_modded.append(server_prefer-ipv4)
+			dns_servers_modded.append(server)
+		template['dns']['servers']=dns_servers_modded
+
+		dns_rules_modded=[]
+		for rule in template['dns']['rules']:
+			if 'outbound' in rule:
+				dns_rules_modded.append(rule)
+				continue
+
+			rule_prefer-ipv4={
+				'type': 'logical',
+				'mode': 'and',
+				'rules': [
+					{
+						'inbound': 'mixed-in'
+					},
+					rule.pop('server')
+				],
+				'server': rule['server']+'-prefer_ipv4'
+			}
+			rule_ipv4-only=dict(rule_prefer-ipv4)
+			rule_ipv4-only['rules'][0]['invert']=True
+			rule_ipv4-only['server']=rule['server']
+			dns_rules_modded.append(rule_prefer-ipv4)
+			dns_rules_modded.append(rule_ipv4-only)
+		template['dns']['rules']=dns_rules_modded
+
 		return json.dumps(template)
 
 	def close(self):
