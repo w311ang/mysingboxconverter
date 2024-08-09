@@ -3,6 +3,7 @@ import json
 import yaml
 from cachetools import cached, TTLCache
 import re
+from copy import deepcopy
 
 class converter:
 	client=httpx.Client()
@@ -72,7 +73,7 @@ class converter:
 				],
 				'server': rule['server']+'-prefer_ipv4'
 			}
-			rule_ipv4_only=dict(rule_prefer_ipv4)
+			rule_ipv4_only=deepcopy(rule_prefer_ipv4)
 			rule_ipv4_only['rules'][0]['invert']=True
 			rule_ipv4_only['server']=rule['server']
 			dns_rules_modded.append(rule_prefer_ipv4)
