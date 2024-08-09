@@ -15,6 +15,10 @@ class converter:
 		return r
 
 	def convert(self, suburl, config, debug=False):
+		def removed_key(d, key):
+			del d[key]
+			return d
+
 		template=yaml.safe_load(config)
 
 		if debug:
@@ -63,7 +67,7 @@ class converter:
 					{
 						'inbound': 'mixed-in'
 					},
-					rule.pop('server')
+					removed_key(rule, 'server')
 				],
 				'server': rule['server']+'-prefer_ipv4'
 			}
