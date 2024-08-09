@@ -16,7 +16,8 @@ class converter:
 
 	def convert(self, suburl, config, debug=False):
 		def removed_key(d, key):
-			del dict(d)[key]
+			d=dict(d)
+			del d[key]
 			return d
 
 		template=yaml.safe_load(config)
