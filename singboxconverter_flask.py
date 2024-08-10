@@ -12,15 +12,16 @@ atexit.register(lambda: converter.close())
 def root():
 	subs = request.args.getlist('sub')
 	configurl = request.args.get('config', 'https://w311ang.github.io/my_singbox_template/index.yml')
-	singbox_subs_index = request.args.get('singbox_subs_index')
-	singbox_subs_index = map(int, singbox_subs_index.split(',')) if singbox_subs_index else []
 
-	subconfig = [
-		{
+	subconfig=[]
+	for config in subs:
+		params = config.split(',')
+		suburl = params[0]
+		is_sing_box_format = bool(params[1]) if len(params) >= 2 else False
+		subconfig.append({
 			'suburl': suburl,
-			'is_sing_box_format': True if index in singbox_subs_index else False
-		} for index, suburl in enumerate(subs)
-	]
+			'is_sing_box_format': is_sing_box_format
+		})
 
 	if request.args.get('debug', 'false') == 'true':
 		debug = True
