@@ -36,8 +36,13 @@ class converter:
 		for config in subconfig:
 			is_sing_box_format=config['is_sing_box_format']
 			suburl=config['suburl']
+			include_all_outbounds=config['include_all_outbounds']
 			r=self.__getsub(suburl, is_sing_box_format=is_sing_box_format)
-			outbounds+=[i for i in r['outbounds'] if not i['type'] in ['direct','block','dns','selector','urltest']]
+			if include_all_outbounds:
+				filter_outbounds=[]
+			else:
+				filter_outbounds=['direct','block','dns','selector','urltest']
+			outbounds+=[i for i in r['outbounds'] if not i['type'] in filter_outbounds]
 			tags+=[i['tag'] for i in outbounds]
 
 		template['outbounds']+=outbounds
