@@ -18,11 +18,11 @@ def root():
 		params = config.split(',')
 		suburl = params[0]
 		is_sing_box_format = bool(int(params[1])) if len(params) >= 2 else False
-		include_all = bool(int(params[2])) if len(params) >= 3 else False
+		include_all_outbounds = bool(int(params[2])) if len(params) >= 3 else False
 		subconfig.append({
 			'suburl': suburl,
 			'is_sing_box_format': is_sing_box_format,
-			'include_all': include_all
+			'include_all_outbounds': include_all_outbounds
 		})
 
 	if request.args.get('debug', 'false') == 'true':
