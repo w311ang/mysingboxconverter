@@ -54,7 +54,9 @@ class converter:
 			})
 
 		new_sub_select=[outbound for outbound in outbounds if outbound['type']=='select']
-		template['outbounds'].insert(template['outbounds'].index('%%新订阅select添加处%%') + 1, new_sub_select)
+		add_position_index=template['outbounds'].index('%%新订阅select添加处%%')
+		template['outbounds'][add_position_index+1:add_position_index+1]=new_sub_select
+		del template['outbounds'][add_position_index]
 		template['outbounds']+=[outbound for outbound in outbounds if not outbound['tag'] in [
 			outbound['tag'] for outbound in new_sub_select
 		]]
