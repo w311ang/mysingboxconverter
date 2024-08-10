@@ -14,6 +14,7 @@ class converter:
 		if is_sing_box_format:
 			r=client.get(suburl)
 			r=yaml.safe_load(r.text)
+			assert type(r) != str, 'Invalid YAML format'
 		else:
 			r=client.get('http://subconverter:25500/sub?target=singbox', params={'url': suburl})
 			r=r.json()
