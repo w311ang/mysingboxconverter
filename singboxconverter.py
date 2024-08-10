@@ -53,7 +53,7 @@ class converter:
 				'use_Proxies_instead_of_select': use_Proxies_instead_of_select
 			})
 
-		new_sub_select=[outbound for outbound in outbounds if outbound['type']=='select']
+		new_sub_select=[outbound for outbound in outbounds if outbound['type']=='selector']
 		add_position_index=template['outbounds'].index('%%新订阅select添加处%%')
 		template['outbounds'][add_position_index+1:add_position_index+1]=new_sub_select
 		del template['outbounds'][add_position_index]
