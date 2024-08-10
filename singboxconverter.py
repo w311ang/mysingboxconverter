@@ -32,29 +32,42 @@ class converter:
 			template['log']['level']='debug'
 
 		outbounds=[]
-		tags=[]
+		tags_config=[]
 		for config in subconfig:
 			is_sing_box_format=config['is_sing_box_format']
 			suburl=config['suburl']
 			include_all_outbounds=config['include_all_outbounds']
 			r=self.__getsub(suburl, is_sing_box_format=is_sing_box_format)
+			use_Proxies_instead_of_select = r.get('custom_config', {}).get('use_Proxies_instead_of_select', False) if is_sing_box_format else False
 			filter_outbound_types=['direct','block','dns','selector','urltest']
 			filtered_outbounds=[i for i in r['outbounds'] if not i['type'] in filter_outbound_types]
 			if include_all_outbounds:
 				outbounds+=r['outbounds']
 			else:
 				outbounds+=filtered_outbounds
-			tags+=[i['tag'] for i in filtered_outbounds]
+			tags_config.append({
+				'tags': [i['tag'] for i in filtered_outbounds],
+				'use_Proxies_instead_of_select': use_Proxies_instead_of_select
+			})
 
 		template['outbounds']+=outbounds
 
-		for index, outbound in enumerate(template['outbounds']):
-			if 'outbounds-regex' in outbound:
-				regex=outbound['outbounds-regex']
-				template['outbounds'][index]['outbounds']=[tag for tag in tags if re.match(regex, tag)]
-				del template['outbounds'][index]['outbounds-regex']
-			elif outbound['type'] in ['selector', 'urltest']:
-				template['outbounds'][index]['outbounds']+=tags
+		for config in tags_config:
+			tags=config['tags']
+			use_Proxies_instead_of_select=config['use_Proxies_instead_of_select']
+			for index, outbound in enumerate(template['outbounds']):
+				if use_Proxies_instead_of_select:
+					if outbound['tag']=='select':
+						continue
+				else:
+					if outbound['tag']=='Proxies':
+						continue
+				if 'outbounds-regex' in outbound:
+					regex=outbound['outbounds-regex']
+					template['outbounds'][index]['outbounds']=[tag for tag in tags if re.match(regex, tag)]
+					del template['outbounds'][index]['outbounds-regex']
+				elif outbound['type'] in ['selector', 'urltest']:
+					template['outbounds'][index]['outbounds']+=tags
 
 		# 修复当mixed-in(domain_strategy为prefer_ipv4)传入一次请求后，该请求解析的域名的缓存也将刷新为prefer_ipv4的，在tun-in再请求一次aaaa就会发现没有走ipv4_only反而响应了ipv6
 		# 解决方法就是让mixed-in的dns请求与tun-in的分开，分开缓存，不让mixed-in的刷新tun-in的就解决了
