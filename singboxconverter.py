@@ -48,11 +48,13 @@ class converter:
 				outbounds+=r['outbounds']
 			else:
 				outbounds+=filtered_outbounds
+			# 准备接下来为每个selector, urltest等等添加outbounds
 			tags_config.append({
 				'tags': [i['tag'] for i in filtered_outbounds],
 				'use_Proxies_instead_of_select': use_Proxies_instead_of_select
 			})
 
+		# 新加的订阅的select不能放在最底下，安排一个合适的位置
 		new_sub_select=[outbound for outbound in outbounds if outbound['type']=='selector']
 		add_position_index=template['outbounds'].index('%%新订阅select添加处%%')
 		template['outbounds'][add_position_index+1:add_position_index+1]=new_sub_select
@@ -60,6 +62,7 @@ class converter:
 		template['outbounds']+=[outbound for outbound in outbounds if not outbound['tag'] in [
 			outbound['tag'] for outbound in new_sub_select
 		]]
+		# 合并订阅之后提取所有outbound带detour字段的以detour为键也就是另一个outbound的tag，再把使用这个detour的outbound的tag作为值
 		detours_config={}
 		for outbound in template['outbounds']:
 			if 'detour' in outbound:
@@ -68,10 +71,12 @@ class converter:
 					detours_config[detour]=[]
 				detours_config[detour].append(outbound['tag'])
 
+		# 遍历每个订阅outbound所有的tag
 		for config in tags_config:
 			tags=config['tags']
 			use_Proxies_instead_of_select=config['use_Proxies_instead_of_select']
 			for index, outbound in enumerate(template['outbounds']):
+				# 如果是作为另一个outbound的detour的话
 				if outbound['tag'] in detours_config:
 					detour_tags=detours_config[outbound['tag']]
 					tags=[tag for tag in tags if tag not in detour_tags]
