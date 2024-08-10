@@ -40,6 +40,8 @@ class converter:
 
 		template['outbounds']+=outbounds
 
+		# 修复当mixed-in(domain_strategy为prefer_ipv4)传入一次请求后，该请求解析的域名的缓存也将刷新为prefer_ipv4的，在tun-in再请求一次aaaa就会发现没有走ipv4_only反而响应了ipv6
+		# 解决方法就是让mixed-in的dns请求与tun-in的分开，分开缓存，不让mixed-in的刷新tun-in的就解决了
 		dns_servers_modded=[]
 		for server in template['dns']['servers']:
 			if (not 'strategy' in server) or server['strategy']!='ipv4_only':
@@ -52,6 +54,7 @@ class converter:
 			dns_servers_modded.append(server_prefer_ipv4)
 			dns_servers_modded.append(server)
 
+		# 同上，是为了修复解析出ipv6问题
 		dns_rules_modded=[]
 		for rule in template['dns']['rules']:
 			if ('outbound' in rule) or ('inbound' in rule):
