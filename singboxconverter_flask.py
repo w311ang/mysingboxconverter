@@ -17,7 +17,7 @@ def root():
 	for config in subs:
 		params = config.split(',')
 		suburl = params[0]
-		is_sing_box_format = bool(params[1]) if len(params) >= 2 else False
+		is_sing_box_format = bool(int(params[1])) if len(params) >= 2 else False
 		subconfig.append({
 			'suburl': suburl,
 			'is_sing_box_format': is_sing_box_format
