@@ -65,7 +65,6 @@ class converter:
 				if 'outbounds-regex' in outbound:
 					regex=outbound['outbounds-regex']
 					template['outbounds'][index]['outbounds']=[tag for tag in tags if re.match(regex, tag)]
-					del template['outbounds'][index]['outbounds-regex']
 				elif outbound['type'] in ['selector', 'urltest']:
 					template['outbounds'][index]['outbounds']+=tags
 		template['outbounds']=[removed_key(outbound, 'outbounds-regex') for outbound in template['outbounds']]
