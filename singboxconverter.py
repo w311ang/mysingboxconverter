@@ -9,9 +9,9 @@ class converter:
 	client=httpx.Client()
 
 	@cached(cache=TTLCache(maxsize=1024, ttl=3600))
-	def __getsub(self, suburl, is_sing-box_format=False):
+	def __getsub(self, suburl, is_sing_box_format=False):
 		client=self.client
-		if is_sing-box_format:
+		if is_sing_box_format:
 			r=client.get(suburl)
 			r=yaml.safe_load(r)
 		else:
@@ -19,7 +19,7 @@ class converter:
 			r=r.json()
 		return r
 
-	def convert(self, suburls: List[dict], config, debug=False):
+	def convert(self, subconfig: List[dict], config, debug=False):
 		def removed_key(d, key):
 			d=dict(d)
 			del d[key]
@@ -32,8 +32,10 @@ class converter:
 
 		outbounds=[]
 		tags=[]
-		for suburl in suburls:
-			r=self.__getsub(suburl, is_sing-box_format=suburl['is_sing-box_format'])
+		for config in subconfig:
+			is_sing_box_format=config['is_sing_box_format']
+			suburl=config['suburl']
+			r=self.__getsub(suburl, is_sing_box_format=is_sing_box_format)
 			outbounds+=[i for i in r['outbounds'] if not i['type'] in ['direct','block','dns','selector','urltest']]
 			tags+=[i['tag'] for i in outbounds]
 
