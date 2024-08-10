@@ -19,7 +19,7 @@ class converter:
 			r=r.json()
 		return r
 
-	def convert(self, subconfig: List[dict], config, debug=False):
+	def convert(self, subconfig: list[dict], config, debug=False):
 		def removed_key(d, key):
 			d=dict(d)
 			del d[key]
