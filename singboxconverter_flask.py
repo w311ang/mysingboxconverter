@@ -12,7 +12,8 @@ atexit.register(lambda: converter.close())
 def root():
 	subs = request.args.getlist('sub')
 	configurl = request.args.get('config', 'https://w311ang.github.io/my_singbox_template/index.yml')
-	singbox_subs_index = map(int, request.args.get('singbox_subs_index', '').split(','))
+	singbox_subs_index = request.args.get('singbox_subs_index')
+	singbox_subs_index = map(int, singbox_subs_index.split(',')) if singbox_subs_index else []
 
 	subconfig = [
 		{
