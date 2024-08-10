@@ -27,6 +27,7 @@ class converter:
 			return d
 
 		template=yaml.safe_load(config)
+		assert type(template) != str, 'Invalid YAML format'
 
 		if debug:
 			template['log']['level']='debug'
@@ -37,8 +38,10 @@ class converter:
 			is_sing_box_format=config['is_sing_box_format']
 			suburl=config['suburl']
 			include_all_outbounds=config['include_all_outbounds']
+
 			r=self.__getsub(suburl, is_sing_box_format=is_sing_box_format)
 			use_Proxies_instead_of_select = r.get('custom_config', {}).get('use_Proxies_instead_of_select', False) if is_sing_box_format else False
+
 			filter_outbound_types=['direct','block','dns','selector','urltest']
 			filtered_outbounds=[i for i in r['outbounds'] if not i['type'] in filter_outbound_types]
 			if include_all_outbounds:
@@ -51,11 +54,21 @@ class converter:
 			})
 
 		template['outbounds']+=outbounds
+		detours_config={}
+		for outbound in template['outbounds']:
+			if 'detour' in outbound:
+				detour=outbound['detour']
+				if not detour in detours_config:
+					detours_config[detour]=[]
+				detours_config[detour].append(outbound['tag'])
 
 		for config in tags_config:
 			tags=config['tags']
 			use_Proxies_instead_of_select=config['use_Proxies_instead_of_select']
 			for index, outbound in enumerate(template['outbounds']):
+				if outbound['tag'] in detours_config:
+					detour_tags=detours_config[outbound['tag']]
+					tags=[tag for tag in tags if tag not in detour_tags]
 				if use_Proxies_instead_of_select:
 					if outbound['tag'] in ['select', 'auto']:
 						continue
