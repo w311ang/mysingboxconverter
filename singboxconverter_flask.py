@@ -21,7 +21,7 @@ def root():
 		include_all = bool(int(params[2])) if len(params) >= 3 else False
 		subconfig.append({
 			'suburl': suburl,
-			'is_sing_box_format': is_sing_box_format
+			'is_sing_box_format': is_sing_box_format,
 			'include_all': include_all
 		})
 
