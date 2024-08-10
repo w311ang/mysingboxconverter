@@ -13,7 +13,7 @@ class converter:
 		client=self.client
 		if is_sing_box_format:
 			r=client.get(suburl)
-			r=yaml.safe_load(r)
+			r=yaml.safe_load(r.text)
 		else:
 			r=client.get('http://subconverter:25500/sub?target=singbox', params={'url': suburl})
 			r=r.json()
