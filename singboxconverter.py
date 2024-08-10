@@ -57,10 +57,10 @@ class converter:
 			use_Proxies_instead_of_select=config['use_Proxies_instead_of_select']
 			for index, outbound in enumerate(template['outbounds']):
 				if use_Proxies_instead_of_select:
-					if outbound['tag']=='select':
+					if outbound['tag'] in ['select', 'auto']:
 						continue
 				else:
-					if outbound['tag']=='Proxies':
+					if outbound['tag'] in ['Proxies', 'auto-Proxies']:
 						continue
 				if 'outbounds-regex' in outbound:
 					regex=outbound['outbounds-regex']
