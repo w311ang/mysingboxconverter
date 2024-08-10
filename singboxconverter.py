@@ -9,13 +9,17 @@ class converter:
 	client=httpx.Client()
 
 	@cached(cache=TTLCache(maxsize=1024, ttl=3600))
-	def __getsub(self, suburl):
+	def __getsub(self, suburl, is_sing-box_format=False):
 		client=self.client
-		r=client.get('http://subconverter:25500/sub?target=singbox', params={'url': suburl})
-		r=r.json()
+		if is_sing-box_format:
+			r=client.get(suburl)
+			r=yaml.safe_load(r)
+		else:
+			r=client.get('http://subconverter:25500/sub?target=singbox', params={'url': suburl})
+			r=r.json()
 		return r
 
-	def convert(self, suburl, config, debug=False):
+	def convert(self, suburls: List[dict], config, debug=False):
 		def removed_key(d, key):
 			d=dict(d)
 			del d[key]
@@ -26,9 +30,14 @@ class converter:
 		if debug:
 			template['log']['level']='debug'
 
-		r=self.__getsub(suburl)
-		outbounds=[i for i in r['outbounds'] if not i['type'] in ['direct','block','dns','selector','urltest']]
-		tags=[i['tag'] for i in outbounds]
+		outbounds=[]
+		tags=[]
+		for suburl in suburls:
+			r=self.__getsub(suburl, is_sing-box_format=suburl['is_sing-box_format'])
+			outbounds+=[i for i in r['outbounds'] if not i['type'] in ['direct','block','dns','selector','urltest']]
+			tags+=[i['tag'] for i in outbounds]
+
+		template['outbounds']+=outbounds
 
 		for index, outbound in enumerate(template['outbounds']):
 			if 'outbounds-regex' in outbound:
@@ -37,8 +46,6 @@ class converter:
 				del template['outbounds'][index]['outbounds-regex']
 			elif outbound['type'] in ['selector', 'urltest']:
 				template['outbounds'][index]['outbounds']+=tags
-
-		template['outbounds']+=outbounds
 
 		# 修复当mixed-in(domain_strategy为prefer_ipv4)传入一次请求后，该请求解析的域名的缓存也将刷新为prefer_ipv4的，在tun-in再请求一次aaaa就会发现没有走ipv4_only反而响应了ipv6
 		# 解决方法就是让mixed-in的dns请求与tun-in的分开，分开缓存，不让mixed-in的刷新tun-in的就解决了
