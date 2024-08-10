@@ -53,7 +53,11 @@ class converter:
 				'use_Proxies_instead_of_select': use_Proxies_instead_of_select
 			})
 
-		template['outbounds']+=outbounds
+		new_sub_select=[outbound for outbound in outbounds if outbound['type']=='select']
+		template['outbounds'].insert(template['outbounds'].index('%%新订阅select添加处%%') + 1, new_sub_select)
+		template['outbounds']+=[outbound for outbound in outbounds if not outbound['tag'] in [
+			outbound['tag'] for outbound in new_sub_select
+		]]
 		detours_config={}
 		for outbound in template['outbounds']:
 			if 'detour' in outbound:
