@@ -32,8 +32,7 @@ class converter:
 		if debug:
 			template['log']['level']='debug'
 
-		outbounds=[]
-		tags_config=[]
+		outbounds=template['outbounds']
 		for config in subconfig:
 			is_sing_box_format=config['is_sing_box_format']
 			suburl=config['suburl']
@@ -42,58 +41,31 @@ class converter:
 			r=self.__getsub(suburl, is_sing_box_format=is_sing_box_format)
 			use_Proxies_instead_of_select = r.get('custom_config', {}).get('use_Proxies_instead_of_select', False) if is_sing_box_format else False
 
-			filter_outbound_types=['direct','block','dns','selector','urltest']
-			filtered_outbounds=[i for i in r['outbounds'] if not i['type'] in filter_outbound_types]
-			if include_all_outbounds:
-				outbounds+=r['outbounds']
-			else:
-				outbounds+=filtered_outbounds
-			# 准备接下来为每个selector, urltest等等添加outbounds
-			tags_config.append({
-				'tags': [i['tag'] for i in filtered_outbounds],
-				'use_Proxies_instead_of_select': use_Proxies_instead_of_select
-			})
+			get_add_position_index=lambda: outbounds.index('%%新订阅select添加处%%')
+			for new_outbound in r['outbounds']:
+				if (not include_all_outbounds) and (not new_outbound['type'] in ['direct','block','dns','selector','urltest']):
+					outbounds.append(new_outbound)
+				elif include_all_outbounds:
+					if new_outbound['type'] == 'selector':
+						outbounds[get_add_position_index():get_add_position_index()]=new_outbound
+					else:
+						outbounds.append(new_outbound)
+				if not new_outbound['type'] in ['direct','block','dns','selector','urltest']:
+					for outbound in outbounds:
+						if not outbound['type'] in ['selector', 'urltest']:
+							continue
+						if use_Proxies_instead_of_select and outbound['tag'] in ['select', 'auto']:
+							continue
+						elif (not use_Proxies_instead_of_select) and outbound['tag'] in ['Proxies', 'auto-Proxies']:
+							continue
+						if 'outbounds-regex' in outbound:
+							if re.match(outbound['outbounds-regex'], new_outbound['tag']):
+								outbound['outbounds']=[] if not 'outbounds' in outbound else outbound['outbounds']
+								outbound['outbounds'].append(new_outbound['tag'])
+						elif not ('detour' in new_outbound and outbound['tag'] == new_outbound['detour']):
+							outbound['outbounds'].append(new_outbound['tag'])
 
-		# 新加的订阅的select不能放在最底下，安排一个合适的位置
-		new_sub_select=[outbound for outbound in outbounds if outbound['type']=='selector']
-		add_position_index=template['outbounds'].index('%%新订阅select添加处%%')
-		template['outbounds'][add_position_index+1:add_position_index+1]=new_sub_select
-		del template['outbounds'][add_position_index]
-		template['outbounds']+=[outbound for outbound in outbounds if not outbound['tag'] in [
-			outbound['tag'] for outbound in new_sub_select
-		]]
-		# 合并订阅之后提取所有outbound带detour字段的以detour为键也就是另一个outbound的tag，再把使用这个detour的outbound的tag作为值
-		detours_config={}
-		for outbound in template['outbounds']:
-			if 'detour' in outbound:
-				detour=outbound['detour']
-				if not detour in detours_config:
-					detours_config[detour]=[]
-				detours_config[detour].append(outbound['tag'])
-
-		# 遍历每个订阅outbound所有的tag
-		for config in tags_config:
-			tags=config['tags']
-			use_Proxies_instead_of_select=config['use_Proxies_instead_of_select']
-			for index, outbound in enumerate(template['outbounds']):
-				# 如果是作为另一个outbound的detour的话
-				if outbound['tag'] in detours_config:
-					detour_tags=detours_config[outbound['tag']]
-					tags=[tag for tag in tags if tag not in detour_tags]
-				if use_Proxies_instead_of_select:
-					if outbound['tag'] in ['select', 'auto']:
-						continue
-				else:
-					if outbound['tag'] in ['Proxies', 'auto-Proxies']:
-						continue
-				if 'outbounds-regex' in outbound:
-					regex=outbound['outbounds-regex']
-					if not 'outbounds' in outbound:
-						template['outbounds'][index]['outbounds']=[]
-					template['outbounds'][index]['outbounds']+=[tag for tag in tags if re.match(regex, tag)]
-				elif outbound['type'] in ['selector', 'urltest']:
-					template['outbounds'][index]['outbounds']+=tags
-		for outbound in template['outbounds']:
+		for outbound in outbounds:
 			outbound.pop('outbounds-regex', None)
 
 		# 修复当mixed-in(domain_strategy为prefer_ipv4)传入一次请求后，该请求解析的域名的缓存也将刷新为prefer_ipv4的，在tun-in再请求一次aaaa就会发现没有走ipv4_only反而响应了ipv6
