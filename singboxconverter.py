@@ -34,40 +34,47 @@ class converter:
 
 		outbounds=template['outbounds']
 		for config in subconfig:
-			is_sing_box_format=config['is_sing_box_format']
 			suburl=config['suburl']
+			is_sing_box_format=config['is_sing_box_format']
+			r=self.__getsub(suburl, is_sing_box_format=is_sing_box_format)
+			config['cache']=r
+			include_all_outbounds=config['include_all_outbounds']
+			for new_outbound in r['outbounds']:
+				if include_all_outbounds and new_outbound['type'] == 'selector':
+					outbounds.insert(outbounds.index('%%新订阅select添加处%%'), new_outbound)
+
+		for config in subconfig:
+			is_sing_box_format=config['is_sing_box_format']
 			include_all_outbounds=config['include_all_outbounds']
 
-			r=self.__getsub(suburl, is_sing_box_format=is_sing_box_format)
+			r=config['cache']
 			use_Proxies_instead_of_select = r.get('custom_config', {}).get('use_Proxies_instead_of_select', False) if is_sing_box_format else False
 
-			get_add_position_index=lambda: outbounds.index('%%新订阅select添加处%%')
 			for new_outbound in r['outbounds']:
 				if (not include_all_outbounds) and (not new_outbound['type'] in ['direct','block','dns','selector','urltest']):
 					outbounds.append(new_outbound)
-				elif include_all_outbounds:
-					if new_outbound['type'] == 'selector':
-						outbounds[get_add_position_index():get_add_position_index()]=new_outbound
-					else:
-						outbounds.append(new_outbound)
+				elif include_all_outbounds and new_outbound['type'] != 'selector':
+					outbounds.append(new_outbound)
 				if not new_outbound['type'] in ['direct','block','dns','selector','urltest']:
 					for outbound in outbounds:
-						if not outbound['type'] in ['selector', 'urltest']:
+						if outbound == '%%新订阅select添加处%%' or not outbound['type'] in ['selector', 'urltest']:
 							continue
 						if use_Proxies_instead_of_select and outbound['tag'] in ['select', 'auto']:
 							continue
 						elif (not use_Proxies_instead_of_select) and outbound['tag'] in ['Proxies', 'auto-Proxies']:
 							continue
 						if 'outbounds-regex' in outbound:
+							outbound['outbounds']=[] if not 'outbounds' in outbound else outbound['outbounds']
 							if re.match(outbound['outbounds-regex'], new_outbound['tag']):
-								outbound['outbounds']=[] if not 'outbounds' in outbound else outbound['outbounds']
 								outbound['outbounds'].append(new_outbound['tag'])
 						elif not ('detour' in new_outbound and outbound['tag'] == new_outbound['detour']):
 							outbound['outbounds'].append(new_outbound['tag'])
 
+		outbounds.remove('%%新订阅select添加处%%')
 		for outbound in outbounds:
 			outbound.pop('outbounds-regex', None)
-		outbounds.remove('%%新订阅select添加处%%')
+			if 'outbounds' in outbound and outbound['outbounds'] == []:
+				outbound['outbounds']=['block']
 
 		# 修复当mixed-in(domain_strategy为prefer_ipv4)传入一次请求后，该请求解析的域名的缓存也将刷新为prefer_ipv4的，在tun-in再请求一次aaaa就会发现没有走ipv4_only反而响应了ipv6
 		# 解决方法就是让mixed-in的dns请求与tun-in的分开，分开缓存，不让mixed-in的刷新tun-in的就解决了
