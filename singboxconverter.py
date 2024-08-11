@@ -67,6 +67,7 @@ class converter:
 
 		for outbound in outbounds:
 			outbound.pop('outbounds-regex', None)
+		outbounds.remove('%%新订阅select添加处%%')
 
 		# 修复当mixed-in(domain_strategy为prefer_ipv4)传入一次请求后，该请求解析的域名的缓存也将刷新为prefer_ipv4的，在tun-in再请求一次aaaa就会发现没有走ipv4_only反而响应了ipv6
 		# 解决方法就是让mixed-in的dns请求与tun-in的分开，分开缓存，不让mixed-in的刷新tun-in的就解决了
