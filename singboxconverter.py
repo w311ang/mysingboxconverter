@@ -27,8 +27,6 @@ class converter:
 			return d
 
 		def applied_params(data, params):
-			if not params:
-				return data
 			if isinstance(data, dict):
 				return {k: applied_params(v, params) for k, v in data.items()}
 			elif isinstance(data, list):
@@ -41,10 +39,11 @@ class converter:
 						default=json.loads(default)
 					except json.decoder.JSONDecodeError:
 						pass
-					if not default:
-						return params.get(param_key)
+					if param_key in params:
+						return params[param_key]
 					else:
-						return params.get(param_key, default)
+						assert default != '', 'value of param not found and default is empty'
+						return default
 				else:
 					return data
 			else:
