@@ -10,20 +10,19 @@ atexit.register(lambda: converter.close())
 
 @app.route("/")
 def root():
-	subs = request.args.getlist('sub')
-	configurl = request.args.get('config', 'https://w311ang.github.io/my_singbox_template/index.yml')
+	params_dict = request.args.to_dict(flat=False)
+	subs = params_dict.pop('sub')
+	configurl = params_dict.pop('config', 'https://w311ang.github.io/my_singbox_template/index.yml')
+	subs_params = params_dict
 
-	subconfig=[]
-	for config in subs:
-		params = config.split(',')
-		suburl = params[0]
-		is_sing_box_format = bool(int(params[1])) if len(params) >= 2 else False
-		include_all_outbounds = bool(int(params[2])) if len(params) >= 3 else False
-		subconfig.append({
-			'suburl': suburl,
-			'is_sing_box_format': is_sing_box_format,
-			'include_all_outbounds': include_all_outbounds
-		})
+	subs=[sub.split(',') in subs]
+	subconfig=[
+		{
+			'suburl': params[0],
+			'is_sing_box_format': bool(int(params[1])) if len(params) >= 2 else False,
+			'include_all_outbounds': bool(int(params[2])) if len(params) >= 3 else False
+		} for config in subs
+	]
 
 	if request.args.get('debug', 'false') == 'true':
 		debug = True
@@ -32,4 +31,4 @@ def root():
 
 	with httpx.Client() as client:
 		config=client.get(configurl).text
-	return converter.convert(subconfig, config, debug=debug)
+	return converter.convert(subconfig, config, subs_params=subs_params, debug=debug)
