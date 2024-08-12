@@ -30,9 +30,9 @@ class converter:
 			if not params:
 				return data
 			if isinstance(data, dict):
-				return {k: applied_params(v, replacements) for k, v in data.items()}
+				return {k: applied_params(v, params) for k, v in data.items()}
 			elif isinstance(data, list):
-				return [applied_params(item, replacements) for item in data]
+				return [applied_params(item, params) for item in data]
 			elif isinstance(data, str):
 				param_request=re.match('%(.+)%(.*)', data)
 				if param_request:
