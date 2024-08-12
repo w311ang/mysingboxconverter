@@ -3,6 +3,7 @@ from flask import request
 import httpx
 import singboxconverter
 import atexit
+import json
 
 app = Flask(__name__)
 converter=singboxconverter.converter()
@@ -13,7 +14,7 @@ def root():
 	params_dict = request.args.to_dict(flat=False)
 	subs = params_dict.pop('sub')
 	configurl = params_dict.pop('config', 'https://w311ang.github.io/my_singbox_template/index.yml')
-	subs_params = params_dict
+	subs_params = {param_key: json.loads(param_value) for param_key, param_value in params_dict.items()}
 
 	subs=[sub.split(',') in subs]
 	subconfig=[
