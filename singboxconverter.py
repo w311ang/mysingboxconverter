@@ -96,8 +96,9 @@ class converter:
 			if ('outbound' in rule) or ('inbound' in rule):
 				dns_rules_modded.append(rule)
 				continue
-			server=[server for server in template['dns']['servers'] if server['tag']==rule['server']][0]
-			if (not 'strategy' in server) or server['strategy']!='ipv4_only':
+			server=[server for server in template['dns']['servers'] if server['tag']==rule['server']]
+			server=server[0] if len(server) >= 1 else {}
+			if server=={} or (not 'strategy' in server) or server['strategy']!='ipv4_only':
 				dns_rules_modded.append(rule)
 				continue
 
