@@ -36,4 +36,4 @@ def root():
 
 	with httpx.Client() as client:
 		template=client.get(templateurl).text
-	return converter.convert(subconfig, template, subs_params=subs_params, debug=debug)
+	return converter.convert(subconfig, template, params_config=params_dict, debug=debug)
