@@ -15,9 +15,8 @@ def root():
 	subs = params_dict.pop('sub')
 	templateurl = params_dict.pop('config', ['https://w311ang.github.io/my_singbox_template/index.yml'])[0]
 	debug = True if params_dict.pop('debug', ['false'])[0] == 'true' else False
-	params_dict = {k: v for k, v in params_dict.items() if v}
+	params_dict = {k: v[0] for k, v in params_dict.items() if v[0]}
 	for param_key, param_value in params_dict.items():
-		param_value=param_value[0]
 		try:
 			params_dict[param_key]=json.loads(param_value)
 		except json.decoder.JSONDecodeError:
