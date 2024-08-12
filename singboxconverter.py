@@ -20,11 +20,26 @@ class converter:
 			r=r.json()
 		return r
 
-	def convert(self, subconfig: list[dict], config, debug=False):
+	def convert(self, subconfig: list[dict], template, params_config={}, debug=False):
 		def removed_key(d, key):
 			d=dict(d)
 			del d[key]
 			return d
+
+		def applied_params(data, params):
+			if isinstance(data, dict):
+				return {k: replace_values(v, replacements) for k, v in data.items()}
+			elif isinstance(data, list):
+				return [replace_values(item, replacements) for item in data]
+			elif isinstance(data, str):
+				param_request=re.match('%(.+)%(.*)', data)
+				if param_request:
+					param_key, default=param_request.group()
+					return params.get(param_key, default)
+				else:
+					return data
+			else:
+				return data
 
 		template=yaml.safe_load(config)
 		assert type(template) != str, 'Invalid YAML format'
@@ -36,7 +51,7 @@ class converter:
 		for config in subconfig:
 			suburl=config['suburl']
 			is_sing_box_format=config['is_sing_box_format']
-			r=self.__getsub(suburl, is_sing_box_format=is_sing_box_format)
+			r=applied_params(self.__getsub(suburl, is_sing_box_format=is_sing_box_format), params_config)
 			config['cache']=r
 			include_all_outbounds=config['include_all_outbounds']
 			for new_outbound in r['outbounds']:
