@@ -27,6 +27,8 @@ class converter:
 			return d
 
 		def applied_params(data, params):
+			if not params:
+				return data
 			if isinstance(data, dict):
 				return {k: replace_values(v, replacements) for k, v in data.items()}
 			elif isinstance(data, list):
@@ -41,7 +43,7 @@ class converter:
 			else:
 				return data
 
-		template=yaml.safe_load(config)
+		template=applied_params(yaml.safe_load(config), params_config)
 		assert type(template) != str, 'Invalid YAML format'
 
 		if debug:
