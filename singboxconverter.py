@@ -36,7 +36,7 @@ class converter:
 			elif isinstance(data, str):
 				param_request=re.match('%(.+)%(.*)', data)
 				if param_request:
-					param_key, default=param_request.group()
+					param_key, default=param_request.groups()
 					try:
 						default=json.loads(default)
 					except json.decoder.JSONDecodeError:
