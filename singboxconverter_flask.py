@@ -14,6 +14,7 @@ def root():
 	params_dict = request.args.to_dict(flat=False)
 	subs = params_dict.pop('sub')
 	templateurl = params_dict.pop('config', 'https://w311ang.github.io/my_singbox_template/index.yml')
+	debug = True if params_dict.pop('debug', 'false') == 'true' else False
 	for param_key, param_value in params_dict.items():
 		try:
 			params_dict[param_key]=json.loads(param_value)
@@ -28,11 +29,6 @@ def root():
 			'include_all_outbounds': bool(int(sub[2])) if len(sub) >= 3 else False
 		} for sub in subs
 	]
-
-	if request.args.get('debug', 'false') == 'true':
-		debug = True
-	else:
-		debug = False
 
 	with httpx.Client() as client:
 		template=client.get(templateurl).text
