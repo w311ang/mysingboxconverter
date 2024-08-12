@@ -34,14 +34,17 @@ class converter:
 			elif isinstance(data, list):
 				return [applied_params(item, params) for item in data]
 			elif isinstance(data, str):
-				param_request=re.match('%(.+)%(.*)', data)
+				param_request=re.match('%((?!%).+)%(.*)', data)
 				if param_request:
 					param_key, default=param_request.groups()
 					try:
 						default=json.loads(default)
 					except json.decoder.JSONDecodeError:
 						pass
-					return params.get(param_key, default)
+					if not default:
+						return params.get(param_key)
+					else:
+						return params.get(param_key, default)
 				else:
 					return data
 			else:
