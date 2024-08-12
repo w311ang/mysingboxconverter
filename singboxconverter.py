@@ -43,7 +43,7 @@ class converter:
 			else:
 				return data
 
-		template=applied_params(yaml.safe_load(config), params_config)
+		template=applied_params(yaml.safe_load(template), params_config)
 		assert type(template) != str, 'Invalid YAML format'
 
 		if debug:
