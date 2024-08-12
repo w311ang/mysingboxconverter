@@ -18,6 +18,7 @@ def root():
 	for param_key, param_value in params_dict.items():
 		param_value=param_value[0]
 		if not param_value:
+			del params_dict[param_key]
 			continue
 		try:
 			params_dict[param_key]=json.loads(param_value)
