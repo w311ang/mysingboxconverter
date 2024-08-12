@@ -14,7 +14,11 @@ def root():
 	params_dict = request.args.to_dict(flat=False)
 	subs = params_dict.pop('sub')
 	configurl = params_dict.pop('config', 'https://w311ang.github.io/my_singbox_template/index.yml')
-	subs_params = {param_key: json.loads(param_value) for param_key, param_value in params_dict.items()}
+	for param_key, param_value in params_dict.items():
+		try:
+			params_dict[param_key]=json.loads(param_value)
+		except json.decoder.JSONDecodeError:
+			params_dict[param_key]=param_value
 
 	subs=[sub.split(',') in subs]
 	subconfig=[
