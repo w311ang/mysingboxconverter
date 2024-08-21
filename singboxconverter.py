@@ -99,7 +99,8 @@ class converter:
 			if 'outbounds' in outbound and outbound['outbounds'] == []:
 				outbound['outbounds']=['block']
 
-		# 修复当mixed-in(domain_strategy为prefer_ipv4)传入一次请求后，该请求解析的域名的缓存也将刷新为prefer_ipv4的，在tun-in再请求一次aaaa就会发现没有走ipv4_only反而响应了ipv6
+		# ~~修复当mixed-in(domain_strategy为prefer_ipv4)传入一次请求后，该请求解析的域名的缓存也将刷新为prefer_ipv4的，在tun-in再请求一次aaaa就会发现没有走ipv4_only反而响应了ipv6~~
+		# 目前是为了防止ipv4_only的mixed-in的解析缓存影响到tun-in的无ipv4_only(国内域名)解析
 		# 解决方法就是让mixed-in的dns请求与tun-in的分开，分开缓存，不让mixed-in的刷新tun-in的就解决了
 		dns_servers_modded=[]
 		for server in template['dns']['servers']:
@@ -108,7 +109,7 @@ class converter:
 				continue
 
 			server_prefer_ipv4=dict(server)
-			server_prefer_ipv4['tag']+='-prefer_ipv4'
+			server_prefer_ipv4['tag']+='-mixed_in'
 			del server_prefer_ipv4['strategy']
 			dns_servers_modded.append(server_prefer_ipv4)
 			dns_servers_modded.append(server)
@@ -134,7 +135,7 @@ class converter:
 					},
 					removed_key(rule, 'server')
 				],
-				'server': rule['server']+'-prefer_ipv4'
+				'server': rule['server']+'-mixed_in'
 			}
 			rule_ipv4_only=deepcopy(rule_prefer_ipv4)
 			rule_ipv4_only['rules'][0]['invert']=True
