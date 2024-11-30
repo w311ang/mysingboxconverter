@@ -16,7 +16,7 @@ class converter:
 			r=yaml.safe_load(r.text)
 			assert type(r) != str, 'Invalid YAML format'
 		else:
-			r=client.get('http://127.0.0.1:25500/sub?target=singbox', params={'url': suburl})
+			r=client.get('http://127.0.0.1:25500/sub', params={'target': 'singbox', 'url': suburl})
 			r=r.json()
 		return r
 
